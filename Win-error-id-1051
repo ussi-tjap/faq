@@ -7,6 +7,7 @@ Description error:
 O cliente WinRM enviou uma solicitacao ao servidor HTTP e obteve uma resposta que dizia que a URL de HTTP solicitada nao estava disponivel. Normalmente, essa resposata e retornada por um servidor HTTP que nao da suporte ao protocolo WS-Managemente.
 
 Scenario:
+WinRM habilitado via gpo nos servidores.
 Ambiente de Gestao de servidores tanto GUI quanto via terminal nao conseguiam conectar nos servidores da floresta. Em um dos servidores funcionava normalmente, o que indicava que aparentemente era um erro nos clientes do servico Winrm.
 
 Testes realizados de comunicacao:
@@ -16,6 +17,17 @@ Test-WSMan -ComputerName "servername.fqdn" -> retornava erro.
 
 No ambiente GUI ao adicionar servidor no painel Server Manager:
 Apresentava erro: Online-falhas de recuperacao de dados 
+
+Outros comandos uteis para diagnostico:
+
+winrs -r:servename.fqdn dir -> conecta no servidor remoto e lista diretorios
+winrm get winrm/config -> lista configuracoes do winrm
+winrm set winrm/config/client @{TrustedHosts="*"} -> define configuracao
+winrm get winrm/config/client/auth
+winrm id -r:localhost
+Get-item wsman:\localhost\client\trustedhosts -> opcao via powershell
+Set-item wsman:\localhost\client\trustedhosts -value '<servername' -concatenate
+
 
 Resolution:
 Tendo como base que era um problema de conexao http e que em outros servidores funcionava normalmente a gerencia. Verificou-se a configuracao de proxy do servidor.
@@ -29,3 +41,9 @@ Removido configuracao de proxy:
 netsh winhttp reset proxy 
 
 Após remocao do proxy normalizou o funcionamento.
+
+
+References:
+
+
+http://www.hurryupandwait.io/blog/understanding-and-troubleshooting-winrm-connection-and-authentication-a-thrill-seekers-guide-to-adventure
